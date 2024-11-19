@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
+import TodoCreateForm  from './ui-components/TodoCreateForm';
+
 const client = generateClient<Schema>();
 
 function App() {
@@ -14,7 +16,7 @@ function App() {
   }, []);
 
   function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
+    client.models.Todo.create({ enterTodo: window.prompt("Todo content") });
   }
 
   return (
@@ -23,7 +25,7 @@ function App() {
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
+          <li key={todo.id}>{todo.enterTodo}</li>
         ))}
       </ul>
       <div>
@@ -32,6 +34,7 @@ function App() {
         <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
           Review next step of this tutorial.
         </a>
+        <TodoCreateForm />
       </div>
     </main>
   );
