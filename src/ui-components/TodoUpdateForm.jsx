@@ -20,15 +20,15 @@ export default function TodoUpdateForm(props) {
     ...rest
   } = props;
   const initialValues = {
-    content: "",
+    enterTodo: "",
   };
-  const [content, setContent] = React.useState(initialValues.content);
+  const [enterTodo, setEnterTodo] = React.useState(initialValues.enterTodo);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = todoRecord
       ? { ...initialValues, ...todoRecord }
       : initialValues;
-    setContent(cleanValues.content);
+    setEnterTodo(cleanValues.enterTodo);
     setErrors({});
   };
   const [todoRecord, setTodoRecord] = React.useState(todoModelProp);
@@ -48,7 +48,7 @@ export default function TodoUpdateForm(props) {
   }, [idProp, todoModelProp]);
   React.useEffect(resetStateValues, [todoRecord]);
   const validations = {
-    content: [],
+    enterTodo: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -76,7 +76,7 @@ export default function TodoUpdateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          content: content ?? null,
+          enterTodo: enterTodo ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -129,28 +129,28 @@ export default function TodoUpdateForm(props) {
       {...rest}
     >
       <TextField
-        label="Content"
+        label="Enter todo"
         isRequired={false}
         isReadOnly={false}
-        value={content}
+        value={enterTodo}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
             const modelFields = {
-              content: value,
+              enterTodo: value,
             };
             const result = onChange(modelFields);
-            value = result?.content ?? value;
+            value = result?.enterTodo ?? value;
           }
-          if (errors.content?.hasError) {
-            runValidationTasks("content", value);
+          if (errors.enterTodo?.hasError) {
+            runValidationTasks("enterTodo", value);
           }
-          setContent(value);
+          setEnterTodo(value);
         }}
-        onBlur={() => runValidationTasks("content", content)}
-        errorMessage={errors.content?.errorMessage}
-        hasError={errors.content?.hasError}
-        {...getOverrideProps(overrides, "content")}
+        onBlur={() => runValidationTasks("enterTodo", enterTodo)}
+        errorMessage={errors.enterTodo?.errorMessage}
+        hasError={errors.enterTodo?.hasError}
+        {...getOverrideProps(overrides, "enterTodo")}
       ></TextField>
       <Flex
         justifyContent="space-between"

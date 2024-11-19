@@ -1,12 +1,18 @@
 /* eslint-disable */
 "use client";
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
+import {
+  Button,
+  Flex,
+  Grid,
+  SelectField,
+  TextField,
+} from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { generateClient } from "aws-amplify/api";
-import { createTodo } from "./graphql/mutations";
+import { createCustomer } from "./graphql/mutations";
 const client = generateClient();
-export default function TodoCreateForm(props) {
+export default function CustomerCreateForm(props) {
   const {
     clearOnSuccess = true,
     onSuccess,
@@ -18,16 +24,26 @@ export default function TodoCreateForm(props) {
     ...rest
   } = props;
   const initialValues = {
-    enterTodo: "",
+    customerId: "",
+    name: "",
+    engagementStage: "",
   };
-  const [enterTodo, setEnterTodo] = React.useState(initialValues.enterTodo);
+  const [customerId, setCustomerId] = React.useState(initialValues.customerId);
+  const [name, setName] = React.useState(initialValues.name);
+  const [engagementStage, setEngagementStage] = React.useState(
+    initialValues.engagementStage
+  );
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
-    setEnterTodo(initialValues.enterTodo);
+    setCustomerId(initialValues.customerId);
+    setName(initialValues.name);
+    setEngagementStage(initialValues.engagementStage);
     setErrors({});
   };
   const validations = {
-    enterTodo: [],
+    customerId: [{ type: "Required" }],
+    name: [],
+    engagementStage: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -55,7 +71,9 @@ export default function TodoCreateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          enterTodo,
+          customerId,
+          name,
+          engagementStage,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -86,7 +104,7 @@ export default function TodoCreateForm(props) {
             }
           });
           await client.graphql({
-            query: createTodo.replaceAll("__typename", ""),
+            query: createCustomer.replaceAll("__typename", ""),
             variables: {
               input: {
                 ...modelFields,
@@ -106,33 +124,103 @@ export default function TodoCreateForm(props) {
           }
         }
       }}
-      {...getOverrideProps(overrides, "TodoCreateForm")}
+      {...getOverrideProps(overrides, "CustomerCreateForm")}
       {...rest}
     >
       <TextField
-        label="Enter todo"
-        isRequired={false}
+        label="Customer id"
+        isRequired={true}
         isReadOnly={false}
-        value={enterTodo}
+        value={customerId}
         onChange={(e) => {
           let { value } = e.target;
           if (onChange) {
             const modelFields = {
-              enterTodo: value,
+              customerId: value,
+              name,
+              engagementStage,
             };
             const result = onChange(modelFields);
-            value = result?.enterTodo ?? value;
+            value = result?.customerId ?? value;
           }
-          if (errors.enterTodo?.hasError) {
-            runValidationTasks("enterTodo", value);
+          if (errors.customerId?.hasError) {
+            runValidationTasks("customerId", value);
           }
-          setEnterTodo(value);
+          setCustomerId(value);
         }}
-        onBlur={() => runValidationTasks("enterTodo", enterTodo)}
-        errorMessage={errors.enterTodo?.errorMessage}
-        hasError={errors.enterTodo?.hasError}
-        {...getOverrideProps(overrides, "enterTodo")}
+        onBlur={() => runValidationTasks("customerId", customerId)}
+        errorMessage={errors.customerId?.errorMessage}
+        hasError={errors.customerId?.hasError}
+        {...getOverrideProps(overrides, "customerId")}
       ></TextField>
+      <TextField
+        label="Name"
+        isRequired={false}
+        isReadOnly={false}
+        value={name}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              customerId,
+              name: value,
+              engagementStage,
+            };
+            const result = onChange(modelFields);
+            value = result?.name ?? value;
+          }
+          if (errors.name?.hasError) {
+            runValidationTasks("name", value);
+          }
+          setName(value);
+        }}
+        onBlur={() => runValidationTasks("name", name)}
+        errorMessage={errors.name?.errorMessage}
+        hasError={errors.name?.hasError}
+        {...getOverrideProps(overrides, "name")}
+      ></TextField>
+      <SelectField
+        label="Engagement stage"
+        placeholder="Please select an option"
+        isDisabled={false}
+        value={engagementStage}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              customerId,
+              name,
+              engagementStage: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.engagementStage ?? value;
+          }
+          if (errors.engagementStage?.hasError) {
+            runValidationTasks("engagementStage", value);
+          }
+          setEngagementStage(value);
+        }}
+        onBlur={() => runValidationTasks("engagementStage", engagementStage)}
+        errorMessage={errors.engagementStage?.errorMessage}
+        hasError={errors.engagementStage?.hasError}
+        {...getOverrideProps(overrides, "engagementStage")}
+      >
+        <option
+          children="Prospect"
+          value="PROSPECT"
+          {...getOverrideProps(overrides, "engagementStageoption0")}
+        ></option>
+        <option
+          children="Interested"
+          value="INTERESTED"
+          {...getOverrideProps(overrides, "engagementStageoption1")}
+        ></option>
+        <option
+          children="Purchased"
+          value="PURCHASED"
+          {...getOverrideProps(overrides, "engagementStageoption2")}
+        ></option>
+      </SelectField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

@@ -3,6 +3,11 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
 import TodoCreateForm  from './ui-components/TodoCreateForm';
+import CustomerCreateForm from "./ui-components/CustomerCreateForm";
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:250789756.
+import CollectionCreateForm from "./ui-components/CollectionCreateForm";
+
+
 
 const client = generateClient<Schema>();
 
@@ -35,6 +40,8 @@ function App() {
           Review next step of this tutorial.
         </a>
         <TodoCreateForm />
+        <CustomerCreateForm />
+        <CollectionCreateForm />
       </div>
     </main>
   );
