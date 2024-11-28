@@ -52,15 +52,15 @@ const schema = a.schema({
     .secondaryIndexes((index) => [index("representativeId")])
     .authorization((allow) => [allow.publicApiKey()]),
 
-  Address: a.customType({
-    line1: a.string().required(),
-    line2: a.string(),
-    city: a.string().required(),
-    state: a.string().required(),
-    country: a.string().required(),
-    pincode: a.string().required(),
-    isPrimary: a.boolean().default(false)
-  })
+    Address: a.customType({
+      line1: a.string().required(),
+      line2: a.string(),
+      city: a.string().required(),
+      state: a.string().required(),
+      country: a.string().required(),
+      pincode: a.string().required(),
+      isPrimary: a.boolean() // Remove .default(false)
+    })
 
 });
 
