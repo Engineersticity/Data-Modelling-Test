@@ -21,7 +21,7 @@ const applyCustomPolicy = (functionConstruct: any) => {
       effect: iam.Effect.ALLOW,
       actions: ['ssm:GetParameter', 'ssm:GetParameters'],
       resources: [
-        `arn:aws:ssm:{{AWS::Region}}:{{AWS::AccountId}}:parameter/amplify/{{AWS_APP_ID}}/{{ENV}}}/COMMON_*`
+        `arn:aws:ssm:ap-southeast-2:381492247335:parameter/amplify/d38ab2vmbwi2b0/dev/COMMON_*`
       ],
     })
   );
