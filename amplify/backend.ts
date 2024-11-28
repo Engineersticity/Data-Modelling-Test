@@ -15,17 +15,39 @@ const backend = defineBackend({
 // Create a new stack for custom resources
 const customStack = backend.createStack('CustomResourceStack');
 
+const amplifyEnv = "dev";
+
+// Create a custom resource to get the Amplify App ID
+const getAppIdCustomResource = new iam.CfnRole(customStack, 'GetAppIdCustomResource', {
+  assumeRolePolicyDocument: {
+    Version: '2012-10-17',
+    Statement: [{
+      Effect: 'Allow',
+      Principal: {
+        Service: 'lambda.amazonaws.com'
+      },
+      Action: 'sts:AssumeRole'
+    }]
+  },
+  managedPolicyArns: [
+    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+  ],
+  policies: [{
+    policyName: 'GetAmplifyAppId',
+    policyDocument: {
+      Version: '2012-10-17',
+      Statement: [{
+        Effect: 'Allow',
+        Action: 'amplify:ListApps',
+        Resource: '*'
+      }]
+    }
+  }]
+});
+
 const applyCustomPolicy = (functionConstruct: any) => {
   const stack = Stack.of(functionConstruct);
   
-  // Get the Amplify App ID and environment from CDK context or environment variables
-  const amplifyAppId = stack.node.tryGetContext('amplifyAppId') || process.env.AMPLIFY_APP_ID;
-  const amplifyEnv = stack.node.tryGetContext('amplifyEnv') || process.env.AMPLIFY_ENV;
-
-  if (!amplifyAppId || !amplifyEnv) {
-    throw new Error('AMPLIFY_APP_ID and AMPLIFY_ENV must be provided via CDK context or environment variables');
-  }
-
   functionConstruct.addToRolePolicy(
     new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -37,7 +59,7 @@ const applyCustomPolicy = (functionConstruct: any) => {
           ':',
           stack.account,
           ':parameter/amplify/',
-          amplifyAppId,
+          Fn.ref('AWS::StackName').split('-')[2], // This should give us the App ID
           '/',
           amplifyEnv,
           '/COMMON_*'
