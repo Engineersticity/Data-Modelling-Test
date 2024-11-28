@@ -1,42 +1,53 @@
-// amplify/backend.ts
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { myFunction } from './functions/my-function/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { Fn, Stack } from 'aws-cdk-lib';
 
 const backend = defineBackend({
   auth,
   data,
   myFunction,
-  // secondFunction,
-  // thirdFunction
+  // ... other functions
 });
 
+// Create a new stack for custom resources
+const customStack = backend.createStack('CustomResourceStack');
 
-// Function to apply custom policy
 const applyCustomPolicy = (functionConstruct: any) => {
+  const stack = Stack.of(functionConstruct);
+  
+  // Get the Amplify App ID and environment from CDK context or environment variables
+  const amplifyAppId = stack.node.tryGetContext('amplifyAppId') || process.env.AMPLIFY_APP_ID;
+  const amplifyEnv = stack.node.tryGetContext('amplifyEnv') || process.env.AMPLIFY_ENV;
+
+  if (!amplifyAppId || !amplifyEnv) {
+    throw new Error('AMPLIFY_APP_ID and AMPLIFY_ENV must be provided via CDK context or environment variables');
+  }
+
   functionConstruct.addToRolePolicy(
     new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['ssm:GetParameter', 'ssm:GetParameters'],
       resources: [
-        `arn:aws:ssm:ap-southeast-2:381492247335:parameter/amplify/d38ab2vmbwi2b0/dev/COMMON_*`
+        Fn.join('', [
+          'arn:aws:ssm:',
+          stack.region,
+          ':',
+          stack.account,
+          ':parameter/amplify/',
+          amplifyAppId,
+          '/',
+          amplifyEnv,
+          '/COMMON_*'
+        ])
       ],
     })
   );
 };
 
-// Apply custom policy to all functions
 applyCustomPolicy(backend.myFunction.resources.lambda);
-// applyCustomPolicy(backend.secondFunction.resources.lambda);
-// applyCustomPolicy(backend.thirdFunction.resources.lambda);
+// ... apply to other functions
 
 export default backend;
-
-
-
-
-
-
-
