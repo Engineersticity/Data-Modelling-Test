@@ -1,6 +1,15 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-
+import { myFunction } from "../functions/my-function/resource";
 const schema = a.schema({
+
+  myFunction: a
+    .query()
+    .arguments({
+      name: a.string(),
+    })
+    .returns(a.string())
+    .handler(a.handler.function(myFunction)),
+
   Todo: a
     .model({
       enterTodo: a.string(),

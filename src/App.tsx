@@ -1,47 +1,57 @@
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-
-import TodoCreateForm  from './ui-components/TodoCreateForm';
+import { generateClient } from "aws-amplify/api";
 import CustomerCreateForm from "./ui-components/CustomerCreateForm";
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:250789756.
-import CollectionCreateForm from "./ui-components/CollectionCreateForm";
+import { CustomerCreateFormInputValues } from './ui-components/CustomerCreateForm';
+import type { Schema } from "../amplify/data/resource";
 
+const client = generateClient<Schema>()
 
-
-const client = generateClient<Schema>();
+// Async function to generate customer name
+const generateCustomerName = (customerId: string): string => {
+  const prefix = customerId.startsWith('B') ? 'Business-' : 
+                customerId.startsWith('C') ? 'Corporate-' : 
+                'Customer-';
+  
+  return `${prefix}${customerId}`;
+};
 
 function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
-
-  useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }, []);
-
-  function createTodo() {
-    client.models.Todo.create({ enterTodo: window.prompt("Todo content") });
-  }
-
   return (
     <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.enterTodo}</li>
-        ))}
-      </ul>
+      <h1>Remove Amplify generated fields from UI</h1>
+
+    
+      <button onClick={async () => {
+        const response = await client.queries.myFunction({ name: 'John' });
+        console.log(response);
+      }}>Test functions</button>
+
+
+      
       <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
-        <TodoCreateForm />
-        <CustomerCreateForm />
-        <CollectionCreateForm />
+        <CustomerCreateForm
+          overrides={{
+            name: {
+              display: 'none'
+            },
+            engagementStage: {
+              display: 'none'
+            }
+          }}
+          onSubmit={(fields: CustomerCreateFormInputValues): CustomerCreateFormInputValues => {
+            const generatedName = generateCustomerName(fields.customerId || "B123");
+            return {
+              ...fields,
+              name: generatedName,
+              engagementStage: 'PROSPECT'
+            };
+          }}
+          onSuccess={(fields) => {
+            console.log('Form submitted successfully with fields:', fields);
+          }}
+          onError={(fields, errorMessage) => {
+            console.error('Form submission error:', errorMessage);
+          }}
+        />
       </div>
     </main>
   );
