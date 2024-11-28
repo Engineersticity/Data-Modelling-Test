@@ -49,6 +49,7 @@ function App() {
             console.log('Form submitted successfully with fields:', fields);
           }}
           onError={(fields, errorMessage) => {
+            console.log('Form submission error with fields:', fields);
             console.error('Form submission error:', errorMessage);
           }}
         />
