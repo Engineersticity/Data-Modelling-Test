@@ -8,7 +8,8 @@ const schema = a.schema({
       name: a.string(),
     })
     .returns(a.string())
-    .handler(a.handler.function(myFunction)),
+    .handler(a.handler.function(myFunction))
+    .authorization((allow) => [allow.publicApiKey()]),
 
   Todo: a
     .model({
