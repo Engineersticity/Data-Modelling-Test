@@ -3,9 +3,7 @@ import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { myFunction } from './functions/my-function/resource';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as cr from 'aws-cdk-lib/custom-resources';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { Fn, Stack, CustomResource } from 'aws-cdk-lib';
+import { Fn, Stack } from 'aws-cdk-lib';
 
 const backend = defineBackend({
   auth,
@@ -14,51 +12,27 @@ const backend = defineBackend({
   // ... other functions
 });
 
-// Create a new stack for custom resources
+// Create a new stack for custom resources if needed
 const customStack = backend.createStack('CustomResourceStack');
 
-const amplifyEnv = "dev";
+const amplifyEnv = "dev"; // You might want to make this dynamic
 
-// Create a custom resource to get the Amplify App ID
-const getAppIdRole = new iam.Role(customStack, 'GetAppIdRole', {
-  assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-  managedPolicies: [
-    iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
-  ],
-});
-
-getAppIdRole.addToPolicy(new iam.PolicyStatement({
-  effect: iam.Effect.ALLOW,
-  actions: ['amplify:ListApps'],
-  resources: ['*']
-}));
-
-const getAppIdProvider = new cr.Provider(customStack, 'GetAppIdProvider', {
-  onEventHandler: new lambda.Function(customStack, 'GetAppIdHandler', {
-    runtime: lambda.Runtime.NODEJS_20_X,
-    handler: 'index.handler',
-    code: lambda.Code.fromInline(`
-      const AWS = require('aws-sdk');
-      exports.handler = async (event) => {
-        const amplify = new AWS.Amplify();
-        const apps = await amplify.listApps().promise();
-        const appId = apps.apps[0].appId;
-        return { physicalResourceId: appId, data: { appId } };
-      };
-    `),
-    role: getAppIdRole,
-  }),
-});
-
-const appIdResource = new CustomResource(customStack, 'AppIdResource', {
-  serviceToken: getAppIdProvider.serviceToken,
-});
-
-const amplifyAppId = appIdResource.getAttString('appId');
+const getTagValue = (stack: Stack, key: string): string | undefined => {
+  const tags = stack.tags.all();
+  const tag = tags.find(t => t.key === key);
+  return tag ? tag.value : undefined;
+};
 
 const applyCustomPolicy = (functionConstruct: any) => {
   const stack = Stack.of(functionConstruct);
   
+  // Get the Amplify App ID from stack tags
+  const amplifyAppId = getTagValue(stack, 'amplify:app-id');
+
+  if (!amplifyAppId) {
+    throw new Error('Could not find amplify:app-id tag on the stack');
+  }
+
   functionConstruct.addToRolePolicy(
     new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,

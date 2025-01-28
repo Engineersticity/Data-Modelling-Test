@@ -3,6 +3,10 @@ import CustomerCreateForm from "./ui-components/CustomerCreateForm";
 import { CustomerCreateFormInputValues } from './ui-components/CustomerCreateForm';
 import type { Schema } from "../amplify/data/resource";
 
+import { ActionCard } from "./figma-components";
+
+
+
 const client = generateClient<Schema>()
 
 // Async function to generate customer name
@@ -19,13 +23,12 @@ function App() {
     <main>
       <h1>Remove Amplify generated fields from UI</h1>
 
-    
       <button onClick={async () => {
         const response = await client.queries.myFunction({ name: 'John' });
         console.log(response);
       }}>Test functions</button>
 
-
+      <ActionCard overrides={{ Button: {children: "Value", color: "red" }}}/>
       
       <div>
         <CustomerCreateForm
